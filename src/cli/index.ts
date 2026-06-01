@@ -17,8 +17,26 @@ async function main(): Promise<void> {
     return
   }
 
-  // parsed.command === 'run' — implemented in a later task.
-  throw new Error('run command not implemented yet')
+  // parsed.command === 'run'
+  const { getRunAdapter } = await import('../adapters/registry.js')
+  const { runFlowScript, loadScriptFile } = await import('../runtime/index.js')
+  const adapter = getRunAdapter(parsed.platform)
+  const cwd = process.cwd()
+
+  let script: string
+  if (parsed.flowScript) {
+    script = await loadScriptFile(resolve(cwd, parsed.flowScript))
+  } else {
+    const flowsDir = resolve(cwd, 'workflows')
+    const { packFlow } = await import('../pack/index.js')
+    script = (await packFlow({ flow: parsed.flow!, platform: 'claude', flowsDir })).script
+  }
+
+  const result = await runFlowScript({
+    script, adapter, args: parsed.args, cwd, budget: parsed.budget,
+  })
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
+  return
 }
 
 main().catch((err) => {
