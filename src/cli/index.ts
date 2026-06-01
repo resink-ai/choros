@@ -29,6 +29,10 @@ async function main(): Promise<void> {
   } else {
     const flowsDir = resolve(cwd, 'workflows')
     const { packFlow } = await import('../pack/index.js')
+    // The canonical script is platform-neutral, so we pack with the 'claude'
+    // target purely to produce it; the run adapter (codex, etc.) is selected
+    // separately above. If a PackTarget.finalize ever injects platform-specific
+    // text, the run path must switch to a finalize-free/neutral target here.
     script = (await packFlow({ flow: parsed.flow!, platform: 'claude', flowsDir })).script
   }
 

@@ -9,7 +9,7 @@ declare global {
     model?: string
   }
   function agent(prompt: string, opts?: AgentOpts): Promise<any>
-  function parallel<T>(thunks: Array<() => Promise<T>>): Promise<Array<T | null>>
+  function parallel<T>(thunks: Array<() => Promise<T> | T>): Promise<Array<T | null>>
   function pipeline(items: any[], ...stages: Array<(prev: any, original: any, index: number) => any>): Promise<any[]>
   function phase(title: string): void
   function log(message: string): void
