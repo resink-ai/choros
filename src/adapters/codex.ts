@@ -6,10 +6,13 @@ const MAX_SCHEMA_RETRIES = 3
 
 function codexCommand(): { bin: string; argsPrefix: string[] } {
   const bin = process.env.CHOROS_CODEX_BIN || 'codex'
-  const prefix = process.env.CHOROS_CODEX_ARGS_PREFIX
-    ? (JSON.parse(process.env.CHOROS_CODEX_ARGS_PREFIX) as string[])
-    : ['exec']
-  return { bin, argsPrefix: prefix }
+  const raw = process.env.CHOROS_CODEX_ARGS_PREFIX
+  if (!raw) return { bin, argsPrefix: ['exec'] }
+  try {
+    return { bin, argsPrefix: JSON.parse(raw) as string[] }
+  } catch {
+    throw new Error(`CHOROS_CODEX_ARGS_PREFIX is not valid JSON: ${raw}`)
+  }
 }
 
 function runCodexOnce(prompt: string, cwd: string): Promise<string> {
@@ -27,6 +30,7 @@ function runCodexOnce(prompt: string, cwd: string): Promise<string> {
       if (code === 0) resolve(out)
       else reject(new Error(`${bin} exited with code ${code}: ${err.trim() || out.trim()}`))
     })
+    child.stdin.on('error', () => {}) // swallow EPIPE; the 'close' handler carries the real rejection
     child.stdin.write(prompt)
     child.stdin.end()
   })
@@ -47,6 +51,9 @@ export const codexRunAdapter: RunAdapter = {
 
     let prompt = schemaPrompt(req.prompt, req.schema)
     let lastErr = ''
+    // Only schema-validation failures are retried here. A spawn/exit error from
+    // runCodexOnce propagates immediately — process failures are not transient
+    // validation issues and should not be silently retried.
     for (let attempt = 1; attempt <= MAX_SCHEMA_RETRIES; attempt++) {
       const text = await runCodexOnce(prompt, req.cwd)
       try {

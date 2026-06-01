@@ -33,4 +33,10 @@ describe('codexRunAdapter.runAgent', () => {
     const r = await codexRunAdapter.runAgent({ prompt: 'RETURN_INVALID_THEN_VALID', cwd: process.cwd(), schema: SCHEMA })
     expect(r.data).toEqual({ name: 'ok', greeting: 'hi' })
   })
+
+  it('throws a labeled error after exhausting retries', async () => {
+    await expect(
+      codexRunAdapter.runAgent({ prompt: 'RETURN_ALWAYS_INVALID', cwd: process.cwd(), schema: SCHEMA, label: 'greet:Ada' }),
+    ).rejects.toThrow(/agent "greet:Ada" failed schema validation after 3 attempts/)
+  })
 })

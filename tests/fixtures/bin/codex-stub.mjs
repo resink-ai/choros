@@ -5,7 +5,9 @@ import { readFileSync } from 'node:fs'
 
 const prompt = readFileSync(0, 'utf8')
 
-if (prompt.includes('RETURN_INVALID_THEN_VALID')) {
+if (prompt.includes('RETURN_ALWAYS_INVALID')) {
+  process.stdout.write('```json\n{ "greeting": "hi" }\n```\n')
+} else if (prompt.includes('RETURN_INVALID_THEN_VALID')) {
   // First attempt: invalid (missing required "name"). Retry preamble flips it valid.
   if (prompt.includes('Previous attempt failed validation')) {
     process.stdout.write('```json\n{ "name": "ok", "greeting": "hi" }\n```\n')
