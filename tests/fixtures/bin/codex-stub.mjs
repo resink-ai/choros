@@ -16,6 +16,11 @@ if (prompt.includes('RETURN_ALWAYS_INVALID')) {
   }
 } else if (prompt.includes('RETURN_SCHEMA_OBJECT')) {
   process.stdout.write('Sure!\n```json\n{ "name": "Ada", "greeting": "Hello Ada" }\n```\n')
+} else if (prompt.includes('Greet ')) {
+  const name = (prompt.match(/Greet (\w+)/) || [])[1] || 'Someone'
+  process.stdout.write('```json\n' + JSON.stringify({ name, greeting: `Hello ${name}` }) + '\n```\n')
+} else if (prompt.includes('Summarize these greetings')) {
+  process.stdout.write('Everyone was greeted warmly.\n')
 } else {
   process.stdout.write('plain text reply\n')
 }
