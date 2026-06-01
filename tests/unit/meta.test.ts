@@ -14,6 +14,8 @@ describe('extractMeta', () => {
     expect(r.source.startsWith('{')).toBe(true)
     expect(r.start).toBeGreaterThan(0)
     expect(r.end).toBeGreaterThan(r.start)
+    expect(r.declStart).toBeLessThan(r.start)
+    expect(r.declEnd).toBeGreaterThanOrEqual(r.end)
   })
 
   it('throws when meta is missing', () => {
@@ -29,5 +31,10 @@ describe('extractMeta', () => {
   it('throws when name or description missing', () => {
     expect(() => extractMeta(`export const meta = { name: 'x' }\nexport default async function run(){}`))
       .toThrow(/description/i)
+  })
+
+  it('throws when a meta property value is not a literal', () => {
+    expect(() => extractMeta(`export const meta = { name: 'x', description: someVar }\nexport default async function run(){}`))
+      .toThrow(/pure literal/i)
   })
 })

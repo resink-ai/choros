@@ -14,6 +14,49 @@ function parse(code: string): acorn.Program {
   return acorn.parse(code, { ecmaVersion: 'latest', sourceType: 'module' }) as unknown as acorn.Program
 }
 
+/**
+ * Recursively verifies that an AST node is a pure literal value — i.e. it
+ * contains only literal strings/numbers/booleans/null, arrays, objects, and
+ * unary +/- applied to a literal.  No identifiers, call expressions, or other
+ * dynamic nodes are allowed.
+ *
+ * Throws if any non-literal node is encountered.
+ */
+function assertPureLiteral(node: any): void {
+  if (!node) return
+  switch (node.type) {
+    case 'Literal':
+      return
+    case 'UnaryExpression':
+      if (node.operator !== '-' && node.operator !== '+') {
+        throw new Error('meta must be a pure literal object (no function calls or variables)')
+      }
+      if (!node.argument || node.argument.type !== 'Literal') {
+        throw new Error('meta must be a pure literal object (no function calls or variables)')
+      }
+      return
+    case 'ArrayExpression':
+      for (const element of (node.elements as any[])) {
+        if (element != null) assertPureLiteral(element)
+      }
+      return
+    case 'ObjectExpression':
+      for (const prop of (node.properties as any[])) {
+        if (prop.computed) {
+          throw new Error('meta must be a pure literal object (no function calls or variables)')
+        }
+        const keyType = prop.key?.type
+        if (keyType !== 'Identifier' && keyType !== 'Literal') {
+          throw new Error('meta must be a pure literal object (no function calls or variables)')
+        }
+        assertPureLiteral(prop.value)
+      }
+      return
+    default:
+      throw new Error('meta must be a pure literal object (no function calls or variables)')
+  }
+}
+
 export function extractMeta(code: string): ExtractedMeta {
   const ast = parse(code)
   for (const node of ast.body) {
@@ -29,14 +72,18 @@ export function extractMeta(code: string): ExtractedMeta {
       if (!init || init.type !== 'ObjectExpression') {
         throw new Error('meta must be a pure literal object (no function calls or variables)')
       }
+      // Verify every value in the object is a pure literal before evaluating.
+      assertPureLiteral(init)
       const source = code.slice(init.start, init.end)
+      // new Function is safe here because assertPureLiteral has already
+      // confirmed the source contains only literal-valued nodes.
       // eslint-disable-next-line no-new-func
       const value = new Function(`return (${source})`)() as WorkflowMeta
-      if (!value.name || typeof value.name !== 'string') {
-        throw new Error('meta is missing a string "name"')
+      if (typeof value.name !== 'string' || value.name.trim() === '') {
+        throw new Error('meta.name must be a non-empty string')
       }
-      if (!value.description || typeof value.description !== 'string') {
-        throw new Error('meta is missing a string "description"')
+      if (typeof value.description !== 'string' || value.description.trim() === '') {
+        throw new Error('meta.description must be a non-empty string')
       }
       return {
         value,
