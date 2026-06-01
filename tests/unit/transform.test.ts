@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { toCanonicalScript } from '../../src/pack/transform.js'
 
+// Mirrors esbuild bundle output: de-exported declarations + a trailing aggregated export.
 const BUNDLED = `
 var SCHEMA = { type: "object" };
-export const meta = { name: "demo", description: "d" };
-export default async function run() {
+var meta = { name: "demo", description: "d" };
+async function run() {
   const x = await agent("hi", { schema: SCHEMA });
   return { x };
 }
+export {
+  run as default,
+  meta
+};
 `
 
 describe('toCanonicalScript', () => {
@@ -21,8 +26,16 @@ describe('toCanonicalScript', () => {
     expect(out).toContain('var SCHEMA = { type: "object" }')
   })
 
-  it('rewrites default export into a named run binding', () => {
-    expect(out).toContain('const __choros_run =')
+  it('keeps the run function declaration', () => {
+    expect(out).toContain('async function run()')
+  })
+
+  it('aliases the default-exported binding to __choros_run', () => {
+    expect(out).toContain('const __choros_run = run;')
+  })
+
+  it('removes the aggregated export statement', () => {
+    expect(out).not.toContain('as default')
     expect(out).not.toContain('export default')
   })
 
@@ -30,18 +43,14 @@ describe('toCanonicalScript', () => {
     expect(out.trimEnd().endsWith('return await __choros_run();')).toBe(true)
   })
 
-  it('handles anonymous default function expression', () => {
-    const anon = `export const meta = { name: "a", description: "b" }\nexport default async function () { return 7 }`
+  it('handles an anonymous default (esbuild names it <file>_default)', () => {
+    const anon = `var meta = { name: "a", description: "b" };\nasync function anon_default() { return 7 }\nexport { anon_default as default, meta };`
     const r = toCanonicalScript(anon)
-    expect(r).toContain('const __choros_run = async function')
-    expect(r).toContain('return await __choros_run();')
+    expect(r).toContain('const __choros_run = anon_default;')
+    expect(r.trimEnd().endsWith('return await __choros_run();')).toBe(true)
   })
 
-  it('handles meta declared after the default export', () => {
-    const inverted = `export default async function run() { return 1 }\nexport const meta = { name: "x", description: "y" }`
-    const r = toCanonicalScript(inverted)
-    expect(r.trimStart().startsWith('export const meta = {')).toBe(true)
-    expect(r.trimEnd().endsWith('return await __choros_run();')).toBe(true)
-    expect(r).not.toContain('export default')
+  it('throws when there is no aggregated export', () => {
+    expect(() => toCanonicalScript(`var x = 1;`)).toThrow(/aggregated export/i)
   })
 })
