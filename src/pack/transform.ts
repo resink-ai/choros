@@ -22,6 +22,10 @@ export function toCanonicalScript(bundled: string): string {
 
   const declStart: number = def.declaration.start
   const declEnd: number = def.declaration.end
+  // defSource is the function/class literal, or — if esbuild emits
+  // `export default <identifier>` — just the identifier. In the latter case
+  // that identifier's declaration still remains in `body`, so the output is
+  // still valid and runnable.
   const defSource = bundled.slice(declStart, declEnd)
 
   // Remove the meta export and the default export from the body; keep deps + other code.

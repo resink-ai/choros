@@ -36,4 +36,12 @@ describe('toCanonicalScript', () => {
     expect(r).toContain('const __choros_run = async function')
     expect(r).toContain('return await __choros_run();')
   })
+
+  it('handles meta declared after the default export', () => {
+    const inverted = `export default async function run() { return 1 }\nexport const meta = { name: "x", description: "y" }`
+    const r = toCanonicalScript(inverted)
+    expect(r.trimStart().startsWith('export const meta = {')).toBe(true)
+    expect(r.trimEnd().endsWith('return await __choros_run();')).toBe(true)
+    expect(r).not.toContain('export default')
+  })
 })
