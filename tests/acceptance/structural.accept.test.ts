@@ -33,3 +33,31 @@ describe('production structural acceptance: trading-agents packs to a valid Clau
     expect(() => new AsyncFunction('agent', 'parallel', 'pipeline', 'phase', 'log', 'args', 'cwd', 'budget', body)).not.toThrow()
   })
 })
+
+// Every shipped workflow must pack to a valid, self-contained, runnable Claude script.
+const WORKFLOWS: Array<{ flow: string; phases: number }> = [
+  { flow: 'trading-agents', phases: 7 },
+  { flow: 'full-stack-ship', phases: 6 },
+  { flow: 'first-principles-scout', phases: 3 },
+]
+
+describe.each(WORKFLOWS)('production structural acceptance: $flow', ({ flow, phases }) => {
+  it('packs to a meta-first, self-contained, runnable Claude script', async () => {
+    const { script, meta } = await packFlow({ flow, platform: 'claude', flowsDir })
+
+    expect(meta.name).toBe(flow)
+    expect(meta.description.length).toBeGreaterThan(0)
+    expect(meta.phases).toHaveLength(phases)
+
+    expect(script.trimStart().startsWith('export const meta = {')).toBe(true)
+    expect(script).not.toMatch(/^\s*import\s/m)
+    expect(script).not.toMatch(/\brequire\(/)
+    expect(script).not.toContain('export default')
+    expect(script.trimEnd().endsWith('return await __choros_run();')).toBe(true)
+
+    // The packed body must compile as an AsyncFunction (catches any syntax error).
+    const body = script.replace(/^\s*export\s+const\s+meta/m, 'const meta')
+    const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor as any
+    expect(() => new AsyncFunction('agent', 'parallel', 'pipeline', 'phase', 'log', 'args', 'cwd', 'budget', body)).not.toThrow()
+  })
+})
