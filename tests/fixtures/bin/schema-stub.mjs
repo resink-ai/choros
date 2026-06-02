@@ -38,6 +38,9 @@ function extractSchema(text) {
 }
 
 // Produce a minimal value that satisfies a JSON schema node.
+// Limitation: allOf/oneOf/anyOf/$ref are NOT handled (they fall through to
+// 'sample'). All current workflow schemas use only type/properties/required/
+// enum/items, so this is sufficient for the verification harness.
 function gen(schema) {
   if (!schema || typeof schema !== 'object') return 'sample'
   if (Array.isArray(schema.enum) && schema.enum.length) return schema.enum[0]

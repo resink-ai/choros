@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-02T13:46:05.204Z",
+  "generatedAt": "2026-06-02T13:55:26.677Z",
   "cliVersions": {
     "claude": "2.1.160 (Claude Code)",
     "codex": "codex-cli 0.135.0",
@@ -21,19 +21,19 @@
         "status": "pass",
         "method": "pack + compile (native exec)",
         "detail": "7 phases · 20063 B · compiles",
-        "ms": 16
+        "ms": 18
       },
       "codex": {
         "status": "pass",
         "method": "run via adapter (schema stub)",
         "detail": "rating=Buy, analysts=4",
-        "ms": 234
+        "ms": 239
       },
       "gemini": {
         "status": "pass",
         "method": "run via adapter (schema stub)",
         "detail": "rating=Buy, analysts=4",
-        "ms": 221
+        "ms": 228
       }
     },
     "full-stack-ship": {
@@ -41,19 +41,19 @@
         "status": "pass",
         "method": "pack + compile (native exec)",
         "detail": "6 phases · 21624 B · compiles",
-        "ms": 5
+        "ms": 6
       },
       "codex": {
         "status": "pass",
         "method": "run via adapter (schema stub)",
         "detail": "reposChanged=[frontend], deploy=pass",
-        "ms": 137
+        "ms": 139
       },
       "gemini": {
         "status": "pass",
         "method": "run via adapter (schema stub)",
         "detail": "reposChanged=[frontend], deploy=pass",
-        "ms": 138
+        "ms": 142
       }
     },
     "first-principles-scout": {
@@ -61,19 +61,19 @@
         "status": "pass",
         "method": "pack + compile (native exec)",
         "detail": "3 phases · 13764 B · compiles",
-        "ms": 3
+        "ms": 4
       },
       "codex": {
         "status": "pass",
         "method": "run via adapter (schema stub)",
         "detail": "products=1, analyses=1",
-        "ms": 69
+        "ms": 71
       },
       "gemini": {
         "status": "pass",
         "method": "run via adapter (schema stub)",
         "detail": "products=1, analyses=1",
-        "ms": 70
+        "ms": 72
       }
     }
   },

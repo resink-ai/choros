@@ -103,6 +103,9 @@ async function runCell(flow: string, platform: 'codex' | 'gemini'): Promise<Cell
   const t0 = Date.now()
   try {
     stubEnvFor(platform)
+    // The canonical script is platform-neutral; CLI adapters (codex, gemini)
+    // have no pack-time step, so the 'claude' pack output IS the correct input
+    // for runFlowScript on every run platform.
     const { script } = await packFlow({ flow, platform: 'claude', flowsDir })
     const result = await runFlowScript({
       script,

@@ -32,6 +32,8 @@ export interface PackTarget {
 
 export interface RunAdapter {
   name: string
+  /** Reserved: when true, a future runtime may bypass the prompt→validate→retry
+   *  loop in favor of the CLI's native structured-output mode. Not yet read. */
   supportsNativeSchema: boolean
   runAgent(req: RunAgentRequest): Promise<RunAgentResult>
 }
