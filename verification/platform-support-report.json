@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-06-02T13:55:26.677Z",
+  "cliVersions": {
+    "claude": "2.1.160 (Claude Code)",
+    "codex": "codex-cli 0.135.0",
+    "gemini": "0.44.1"
+  },
+  "flows": [
+    "trading-agents",
+    "full-stack-ship",
+    "first-principles-scout"
+  ],
+  "platforms": [
+    "claude",
+    "codex",
+    "gemini"
+  ],
+  "matrix": {
+    "trading-agents": {
+      "claude": {
+        "status": "pass",
+        "method": "pack + compile (native exec)",
+        "detail": "7 phases · 20063 B · compiles",
+        "ms": 18
+      },
+      "codex": {
+        "status": "pass",
+        "method": "run via adapter (schema stub)",
+        "detail": "rating=Buy, analysts=4",
+        "ms": 239
+      },
+      "gemini": {
+        "status": "pass",
+        "method": "run via adapter (schema stub)",
+        "detail": "rating=Buy, analysts=4",
+        "ms": 228
+      }
+    },
+    "full-stack-ship": {
+      "claude": {
+        "status": "pass",
+        "method": "pack + compile (native exec)",
+        "detail": "6 phases · 21624 B · compiles",
+        "ms": 6
+      },
+      "codex": {
+        "status": "pass",
+        "method": "run via adapter (schema stub)",
+        "detail": "reposChanged=[frontend], deploy=pass",
+        "ms": 139
+      },
+      "gemini": {
+        "status": "pass",
+        "method": "run via adapter (schema stub)",
+        "detail": "reposChanged=[frontend], deploy=pass",
+        "ms": 142
+      }
+    },
+    "first-principles-scout": {
+      "claude": {
+        "status": "pass",
+        "method": "pack + compile (native exec)",
+        "detail": "3 phases · 13764 B · compiles",
+        "ms": 4
+      },
+      "codex": {
+        "status": "pass",
+        "method": "run via adapter (schema stub)",
+        "detail": "products=1, analyses=1",
+        "ms": 71
+      },
+      "gemini": {
+        "status": "pass",
+        "method": "run via adapter (schema stub)",
+        "detail": "products=1, analyses=1",
+        "ms": 72
+      }
+    }
+  },
+  "liveSmoke": {
+    "codex": {
+      "available": true,
+      "plain": "pass",
+      "schema": "pass",
+      "detail": "PONG",
+      "version": "codex-cli 0.135.0"
+    },
+    "gemini": {
+      "available": true,
+      "plain": "pass",
+      "schema": "pass",
+      "detail": "PONG",
+      "version": "0.44.1"
+    }
+  },
+  "summary": {
+    "passed": 9,
+    "total": 9
+  }
+}

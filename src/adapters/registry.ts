@@ -1,6 +1,7 @@
 import type { PackTarget, RunAdapter } from './types.js'
 import { claudePackTarget } from './claude.js'
 import { codexRunAdapter } from './codex.js'
+import { geminiRunAdapter } from './gemini.js'
 
 const PACK_TARGETS: Record<string, PackTarget> = {
   claude: claudePackTarget,
@@ -8,6 +9,7 @@ const PACK_TARGETS: Record<string, PackTarget> = {
 
 const RUN_ADAPTERS: Record<string, RunAdapter> = {
   codex: codexRunAdapter,
+  gemini: geminiRunAdapter,
 }
 
 export function getPackTarget(name: string): PackTarget {
