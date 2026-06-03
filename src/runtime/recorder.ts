@@ -95,28 +95,38 @@ function jsonOrNull(v: unknown): string | null {
   try { return JSON.stringify(v) } catch { return null }
 }
 
-/** Open (or create) the SQLite DB and start a run row. */
+/**
+ * Open (or create) the SQLite DB and start a run row. If construction fails for
+ * ANY reason (bad path, sqlite unavailable, locked/corrupt DB), this returns the
+ * no-op `nullRecorder` instead of throwing — recording must never break a run.
+ */
 export function openSqliteRecorder(opts: OpenRecorderOptions): RunRecorder {
   const now = opts.now ?? (() => Date.now())
-  mkdirSync(dirname(opts.dbPath), { recursive: true })
-  const db = new DatabaseSync(opts.dbPath)
-  db.exec(SCHEMA)
+  let db: InstanceType<typeof DatabaseSync>
+  let runId: string
+  try {
+    mkdirSync(dirname(opts.dbPath), { recursive: true })
+    db = new DatabaseSync(opts.dbPath)
+    db.exec(SCHEMA)
+    runId = randomUUID()
+    db.prepare(
+      `INSERT INTO runs (id, flow, platform, args, status, budget_total, tokens_spent, started_at)
+       VALUES (?, ?, ?, ?, 'running', ?, 0, ?)`,
+    ).run(runId, opts.flow, opts.platform, jsonOrNull(opts.args), opts.budgetTotal ?? null, now())
+  } catch (e) {
+    process.stderr.write(`choros: run recording disabled (${e instanceof Error ? e.message : String(e)})\n`)
+    return nullRecorder
+  }
 
-  const runId = randomUUID()
   let seq = 0
   let currentPhase = ''
   let warned = false
   const warn = (e: unknown) => {
     if (warned) return
     warned = true
-    process.stderr.write(`choros: run recording disabled (${e instanceof Error ? e.message : String(e)})\n`)
+    process.stderr.write(`choros: run recording stopped (${e instanceof Error ? e.message : String(e)})\n`)
   }
   const safe = (fn: () => void) => { try { fn() } catch (e) { warn(e) } }
-
-  db.prepare(
-    `INSERT INTO runs (id, flow, platform, args, status, budget_total, tokens_spent, started_at)
-     VALUES (?, ?, ?, ?, 'running', ?, 0, ?)`,
-  ).run(runId, opts.flow, opts.platform, jsonOrNull(opts.args), opts.budgetTotal ?? null, now())
 
   return {
     runId,

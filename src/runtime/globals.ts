@@ -31,6 +31,9 @@ export function createGlobals(opts: GlobalsOptions): WorkflowGlobals {
   const recorder = opts.recorder ?? nullRecorder
   const onLog = opts.onLog ?? ((l) => process.stderr.write(`${l}\n`))
   const onPhase = opts.onPhase ?? ((t) => process.stderr.write(`\n=== ${t} ===\n`))
+  // Best-effort phase attribution for agent calls that don't pass an explicit
+  // `phase`: under concurrent parallel() calls the last phase() wins, which can
+  // mislabel a row's phase (data is otherwise correct). Pass opts.phase to pin it.
   let currentPhase = ''
 
   async function agent(

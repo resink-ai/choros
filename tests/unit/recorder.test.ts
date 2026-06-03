@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { createRequire } from 'node:module'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -58,6 +58,22 @@ describe('openSqliteRecorder', () => {
     expect(calls[0].tokens).toBe(7)
     expect(calls[0].status).toBe('ok')
     expect(calls[0].duration_ms).toBeGreaterThanOrEqual(0)
+  })
+
+  it('never throws on construction failure — returns a no-op recorder', () => {
+    // Make dirname() un-creatable by placing a file where a directory must go.
+    writeFileSync(join(dir, 'afile'), 'x')
+    const badPath = join(dir, 'afile', 'nested', 'runs.db')
+    let rec!: ReturnType<typeof openSqliteRecorder>
+    expect(() => { rec = openSqliteRecorder({ dbPath: badPath, flow: 'demo', platform: 'codex' }) }).not.toThrow()
+    expect(rec.runId).toBe('') // nullRecorder
+    // All methods are safe no-ops.
+    expect(() => {
+      rec.phase('p'); rec.log('l')
+      const id = rec.agentStart({ prompt: 'x' })
+      rec.agentEnd(id, { status: 'ok' })
+      rec.finish({ status: 'ok' }); rec.close()
+    }).not.toThrow()
   })
 
   it('records an error finish', () => {
