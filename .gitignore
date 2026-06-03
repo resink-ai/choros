@@ -147,3 +147,6 @@ local/
 
 dist/
 node_modules/
+
+# choros run-observability local DB
+.choros/

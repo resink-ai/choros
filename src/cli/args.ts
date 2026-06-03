@@ -15,6 +15,8 @@ export type RunArgs = {
   flowScript: string | undefined
   args: unknown
   budget: number | null
+  db: string | undefined
+  record: boolean
 }
 
 export type CliArgs = PackArgs | RunArgs
@@ -45,6 +47,8 @@ export function parseCli(argv: string[]): CliArgs {
         'flow-script': { type: 'string' },
         args: { type: 'string' },
         budget: { type: 'string' },
+        db: { type: 'string' },
+        'no-record': { type: 'boolean', default: false },
       },
       allowPositionals: false,
     })
@@ -57,6 +61,8 @@ export function parseCli(argv: string[]): CliArgs {
       flowScript: values['flow-script'],
       args: values.args ? JSON.parse(values.args) : undefined,
       budget: values.budget ? Number(values.budget) : null,
+      db: values.db,
+      record: !values['no-record'],
     }
   }
   throw new Error(`unknown command "${command ?? ''}" (expected: pack | run)`)

@@ -18,10 +18,14 @@ async function main(): Promise<void> {
   }
 
   // parsed.command === 'run'
+  const { basename } = await import('node:path')
   const { getRunAdapter } = await import('../adapters/registry.js')
   const { runFlowScript, loadScriptFile } = await import('../runtime/index.js')
+  const { openSqliteRecorder } = await import('../runtime/recorder.js')
   const adapter = getRunAdapter(parsed.platform)
   const cwd = process.cwd()
+
+  const flowName = parsed.flow ?? basename(parsed.flowScript ?? 'workflow').replace(/\.(workflow\.)?js$/, '')
 
   let script: string
   if (parsed.flowScript) {
@@ -36,8 +40,21 @@ async function main(): Promise<void> {
     script = (await packFlow({ flow: parsed.flow!, platform: 'claude', flowsDir })).script
   }
 
+  const recorder = parsed.record
+    ? openSqliteRecorder({
+        dbPath: parsed.db ?? resolve(cwd, '.choros/runs.db'),
+        flow: flowName,
+        platform: parsed.platform,
+        args: parsed.args,
+        budgetTotal: parsed.budget,
+      })
+    : undefined
+  if (recorder) {
+    process.stderr.write(`choros: recording run ${recorder.runId} → ${parsed.db ?? resolve(cwd, '.choros/runs.db')}\n`)
+  }
+
   const result = await runFlowScript({
-    script, adapter, args: parsed.args, cwd, budget: parsed.budget,
+    script, adapter, args: parsed.args, cwd, budget: parsed.budget, recorder,
   })
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
   return
