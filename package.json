@@ -10,7 +10,8 @@
     "test": "vitest run tests/unit",
     "test:e2e": "vitest run tests/e2e",
     "test:acceptance": "vitest run tests/acceptance",
-    "verify": "tsx scripts/verify-platforms.ts"
+    "verify": "tsx scripts/verify-platforms.ts",
+    "seed": "tsx scripts/seed-runs.ts"
   },
   "dependencies": {
     "acorn": "^8.12.0",

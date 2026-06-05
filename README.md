@@ -36,6 +36,32 @@ A workflow lives in `workflows/<name>/` with an entry that exports a pure-litera
 `agent / parallel / pipeline / phase / log / args / budget / cwd` — do not import
 them. Imports from `./schemas`, `./prompts`, etc. are inlined at pack time.
 
+## Observe runs
+
+Every `choros run` is captured to SQLite (`.choros/runs.db` by default) — phases,
+each agent conversation (prompt, response, parsed data, tokens, timing, status),
+log events, and the final result. Recording never breaks a run.
+
+```bash
+choros run --platform codex --flow trading-agents   # records to .choros/runs.db
+choros run ... --db /tmp/runs.db                     # custom DB path
+choros run ... --no-record                           # disable recording
+
+npm run seed         # generate a sample .choros/runs.db (3 flows + 1 error run)
+```
+
+Visualize with the lean Next.js dashboard (reads the same DB):
+
+```bash
+cd dashboard && npm install && npm run dev   # http://localhost:4321
+# point at any DB:  CHOROS_DB=/path/to/runs.db npm run dev
+```
+
+The dashboard shows high-level stats and a runs list (filter by flow/platform/
+status/search), and a per-run drill-down: foldable phase sections, agent-call
+cards (prompt / response / parsed data / tokens / duration / status), log events,
+and the final result — with expand/collapse-all and status/text filtering.
+
 ## Development
 
 ```bash

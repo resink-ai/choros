@@ -11,8 +11,15 @@ describe('parseCli', () => {
     const r = parseCli(['run', '--platform', 'codex', '--flow-script', 'a.js', '--args', '{"x":1}', '--budget', '500000'])
     expect(r).toEqual({
       command: 'run', platform: 'codex', flow: undefined, flowScript: 'a.js',
-      args: { x: 1 }, budget: 500000,
+      args: { x: 1 }, budget: 500000, db: undefined, record: true,
     })
+  })
+
+  it('parses run recording flags (--db, --no-record)', () => {
+    const a = parseCli(['run', '--platform', 'codex', '--flow', 'x', '--db', '/tmp/r.db'])
+    expect(a).toMatchObject({ db: '/tmp/r.db', record: true })
+    const b = parseCli(['run', '--platform', 'codex', '--flow', 'x', '--no-record'])
+    expect(b).toMatchObject({ db: undefined, record: false })
   })
 
   it('throws on unknown command', () => {

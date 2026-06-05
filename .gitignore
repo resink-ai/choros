@@ -147,3 +147,10 @@ local/
 
 dist/
 node_modules/
+
+# choros run-observability local DB
+.choros/
+
+# dashboard build/deps
+dashboard/.next/
+dashboard/node_modules/
